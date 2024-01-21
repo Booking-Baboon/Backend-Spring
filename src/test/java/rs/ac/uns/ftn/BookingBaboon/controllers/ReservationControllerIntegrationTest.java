@@ -8,7 +8,10 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.*;
 import org.springframework.test.context.ActiveProfiles;
+import org.testng.Assert;
 import rs.ac.uns.ftn.BookingBaboon.config.security.JwtTokenUtil;
+import rs.ac.uns.ftn.BookingBaboon.domain.reservation.Reservation;
+import rs.ac.uns.ftn.BookingBaboon.domain.reservation.ReservationStatus;
 import rs.ac.uns.ftn.BookingBaboon.domain.shared.TimeSlot;
 import rs.ac.uns.ftn.BookingBaboon.dtos.accommodation_handling.accommodation.AccommodationReference;
 import rs.ac.uns.ftn.BookingBaboon.dtos.accommodation_handling.accommodation.AccommodationResponse;
@@ -62,5 +65,31 @@ public class ReservationControllerIntegrationTest {
 
         ReservationResponse createdReservation = responseEntity.getBody();
         assertNotNull(createdReservation);
+    }
+
+    @Test
+    @DisplayName("Should approve Reservation When making PUT request to api/v1/reservations/{id}/approve")
+    public void shouldApproveReservation() {
+        Long reservationId = 26L;
+
+        String token = jwtTokenUtil.generateTokenForGuest(5L, "charlie.brown@example.com");
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(token);
+
+        HttpEntity<Void> requestEntity = new HttpEntity<>(headers);
+
+        ResponseEntity<ReservationResponse> responseEntity = restTemplate.exchange(
+                "http://localhost:" + port + "/api/v1/reservations/{id}/approve",
+                HttpMethod.PUT,
+                requestEntity,
+                ReservationResponse.class,
+                reservationId);
+
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+
+        ReservationResponse approvedReservation = responseEntity.getBody();
+        assertNotNull(approvedReservation);
+        Assert.assertEquals(ReservationStatus.Approved.toString(), approvedReservation.getStatus());
     }
 }
