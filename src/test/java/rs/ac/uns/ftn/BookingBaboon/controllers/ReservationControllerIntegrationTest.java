@@ -92,4 +92,26 @@ public class ReservationControllerIntegrationTest {
         assertNotNull(approvedReservation);
         Assert.assertEquals(ReservationStatus.Approved.toString(), approvedReservation.getStatus());
     }
+
+    @Test
+    @DisplayName("Should Get NotFound status for reservation with invalid ID When making PUT request to api/v1/reservations/{id}/approve")
+    public void shouldNotApproveReservationWithInvalidId() {
+        Long reservationId = -1L;
+
+        String token = jwtTokenUtil.generateTokenForGuest(5L, "charlie.brown@example.com");
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(token);
+
+        HttpEntity<Void> requestEntity = new HttpEntity<>(headers);
+
+        ResponseEntity<ReservationResponse> responseEntity = restTemplate.exchange(
+                "http://localhost:" + port + "/api/v1/reservations/{id}/approve",
+                HttpMethod.PUT,
+                requestEntity,
+                ReservationResponse.class,
+                reservationId);
+
+        assertEquals(HttpStatus.NOT_FOUND, responseEntity.getStatusCode());
+    }
 }
