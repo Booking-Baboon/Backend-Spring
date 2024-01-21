@@ -152,4 +152,55 @@ public class ReservationServiceTest {
 
         verify(accommodationService, times(1)).get(reservation.getAccommodation().getId());
     }
+
+    @Test
+    public void testApproveReservation() {
+        Guest guest = new Guest();
+        guest.setId(1L);
+
+        Accommodation accommodation = new Accommodation();
+        accommodation.setId(1L);
+        accommodation.setIsAutomaticallyAccepted(false);
+
+        Reservation reservation = new Reservation();
+        reservation.setId(1L);
+        reservation.setGuest(guest);
+        reservation.setAccommodation(accommodation);
+        reservation.setTimeSlot(new TimeSlot(LocalDate.of(2024, 1, 1), LocalDate.of(2024, 1, 5)));
+
+        Reservation firstOverlappingReservation = new Reservation();
+        firstOverlappingReservation.setId(2L);
+        firstOverlappingReservation.setAccommodation(accommodation);
+        firstOverlappingReservation.setGuest(guest);
+        firstOverlappingReservation.setStatus(ReservationStatus.Pending);
+        firstOverlappingReservation.setTimeSlot(new TimeSlot(LocalDate.of(2024, 1, 3), LocalDate.of(2024, 1, 6)));
+
+        Reservation notOverlappingReservation = new Reservation();
+        notOverlappingReservation.setId(3L);
+        notOverlappingReservation.setAccommodation(accommodation);
+        notOverlappingReservation.setGuest(guest);
+        notOverlappingReservation.setStatus(ReservationStatus.Pending);
+        notOverlappingReservation.setTimeSlot(new TimeSlot(LocalDate.of(2024, 1, 5), LocalDate.of(2024, 1, 8)));
+
+        //mocks
+        when(reservationRepository.findAllByAccommodationId(eq(accommodation.getId())))
+                .thenReturn(Arrays.asList(reservation, firstOverlappingReservation, notOverlappingReservation));
+
+        when(reservationRepository.findById(eq(reservation.getId()))).thenReturn(Optional.of(reservation));
+        when(reservationRepository.findById(eq(firstOverlappingReservation.getId()))).thenReturn(Optional.of(firstOverlappingReservation));
+        when(reservationRepository.findById(eq(notOverlappingReservation.getId()))).thenReturn(Optional.of(notOverlappingReservation));
+
+        when(accommodationService.get(reservation.getAccommodation().getId())).thenReturn(accommodation);
+        when(userService.get(eq(guest.getId()))).thenReturn(guest);
+
+        Reservation result = reservationService.approveReservation(reservation.getId());
+
+        assertNotNull(result);
+        assertEquals(ReservationStatus.Approved, result.getStatus());
+
+        // Verify that the overlapping reservation is denied
+        assertEquals(ReservationStatus.Denied, firstOverlappingReservation.getStatus());
+        assertEquals(ReservationStatus.Pending, notOverlappingReservation.getStatus());
+
+    }
 }
