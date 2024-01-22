@@ -13,6 +13,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.web.server.ResponseStatusException;
 import rs.ac.uns.ftn.BookingBaboon.config.TestSecurityConfig;
 import rs.ac.uns.ftn.BookingBaboon.domain.accommodation_handling.Accommodation;
+import rs.ac.uns.ftn.BookingBaboon.domain.accommodation_handling.AvailablePeriod;
 import rs.ac.uns.ftn.BookingBaboon.domain.notifications.Notification;
 import rs.ac.uns.ftn.BookingBaboon.domain.notifications.NotificationType;
 import rs.ac.uns.ftn.BookingBaboon.domain.reservation.Reservation;
@@ -138,6 +139,7 @@ public class ReservationServiceTest {
         Accommodation accommodation = new Accommodation();
         accommodation.setId(1L);
         accommodation.setIsAutomaticallyAccepted(false);
+        accommodation.setAvailablePeriods(List.of(new AvailablePeriod(1L, new TimeSlot(LocalDate.of(2024, 1, 1), LocalDate.of(2024, 1, 5)),10F)));
 
         Reservation reservation = new Reservation();
         reservation.setId(1L);
@@ -201,6 +203,8 @@ public class ReservationServiceTest {
         // Verify that the overlapping reservation is denied
         assertEquals(ReservationStatus.Denied, firstOverlappingReservation.getStatus());
         assertEquals(ReservationStatus.Pending, notOverlappingReservation.getStatus());
+
+        verify(availablePeriodService, times(1)).getOverlappingPeriods(reservation.getTimeSlot(),accommodation.getAvailablePeriods());
 
     }
 }
