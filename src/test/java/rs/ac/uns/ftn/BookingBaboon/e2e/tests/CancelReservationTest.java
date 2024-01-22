@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 @Transactional
 public class CancelReservationTest extends TestBase {
     String RESERVATIONID = "6";
+    String INVALID_RESERVATIONID = "11";
     private final String guestUsername = "charlie.brown@example.com";
     private final String guestPassword = "charliespass";
 
@@ -43,18 +44,36 @@ public class CancelReservationTest extends TestBase {
         }
     }
 
-    @Test
-    public void navigateToChangeAccommodationAvailability(){
+    public GuestsReservationsPage navigateToGuestReservations(){
         loginAsGuest();
         HomePage homePageGuest = new HomePage(driver);
         Assert.assertTrue(homePageGuest.isPageOpened());
         homePageGuest.goToReservations();
         GuestsReservationsPage guestsReservationsPage = new GuestsReservationsPage(driver);
         Assert.assertTrue(guestsReservationsPage.isPageOpened());
+
+        return guestsReservationsPage;
+    }
+
+    @Test
+    public void CancelReservationTest() {
+        GuestsReservationsPage guestsReservationsPage = navigateToGuestReservations();
         Assert.assertTrue(guestsReservationsPage.checkIfReservationStatus(RESERVATIONID, "Approved"));
+        Assert.assertTrue(guestsReservationsPage.isCancelButtonEnabled(RESERVATIONID));
         guestsReservationsPage.ClickCancel(RESERVATIONID);
         GuestsReservationsPage refreshedGuestReservationPage = new GuestsReservationsPage(driver);
         Assert.assertTrue(refreshedGuestReservationPage.checkIfReservationStatus(RESERVATIONID, "Canceled"));
+    }
+
+    @Test
+    public void CancelReservationWhenButtonIsDisabledTest() {
+        GuestsReservationsPage guestsReservationsPage = navigateToGuestReservations();
+        Assert.assertTrue(guestsReservationsPage.checkIfReservationStatus(INVALID_RESERVATIONID, "Finished"));
+
+        Assert.assertFalse(guestsReservationsPage.isCancelButtonEnabled(INVALID_RESERVATIONID));
+
+        GuestsReservationsPage refreshedGuestReservationPage = new GuestsReservationsPage(driver);
+        Assert.assertTrue(refreshedGuestReservationPage.checkIfReservationStatus(INVALID_RESERVATIONID, "Finished"));
     }
 
 /*    @Test

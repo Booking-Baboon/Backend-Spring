@@ -48,7 +48,7 @@ public class GuestsReservationsPage {
             if (nextButton.isEnabled() && reservation == null) {
                 nextButton.click();
             } else if (reservation != null) {
-                WebElement cancelButton = reservation.findElement(By.id("cancel-reservation-button"));
+                WebElement cancelButton = getCancelButtonFromRow(reservation);
                 cancelButton.click();
                 break;
             } else {
@@ -66,7 +66,6 @@ public class GuestsReservationsPage {
             System.out.println("id: " + parts[0]);
 
             if (rowId.equals(id)) {
-                //return cancel button
                 return row;
             }
 
@@ -99,4 +98,27 @@ public class GuestsReservationsPage {
         return parts[7];
     }
 
+    private WebElement getCancelButtonFromRow(WebElement row) {
+        return row.findElement(By.id("cancel-reservation-button"));
+    }
+
+    public boolean isCancelButtonEnabled(String id) {
+        WebElement table = reservationsTable;
+        WebElement nextButton = driver.findElement(By.cssSelector("button[aria-label='Next page']"));
+        WebElement reservation;
+        while (true) {
+            reservation = getReservationRow(table, id);
+
+            if (nextButton.isEnabled() && reservation == null) {
+                nextButton.click();
+
+            } else if (reservation != null) {
+                return getCancelButtonFromRow(reservation).isEnabled();
+
+            } else {
+                break;
+            }
+        }
+        return false;
+    }
 }
