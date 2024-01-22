@@ -22,7 +22,9 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 
 @SpringBootTest
@@ -96,5 +98,65 @@ public class AvailablePeriodServiceTest {
         ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> availablePeriodService.remove(1L));
         assertEquals(HttpStatus.NOT_FOUND.value(), exception.getStatusCode().value());
         verify(availablePeriodRepository, never()).delete(availablePeriod);
+    }
+
+    @Test
+    public void testSplitPeriodsWhenNoSplitting() {
+        TimeSlot timeSlot = new TimeSlot(LocalDate.of(2024, 1, 1), LocalDate.of(2024, 1, 5));
+        AvailablePeriod availablePeriod = new AvailablePeriod(1L, new TimeSlot(LocalDate.of(2024, 1, 1), LocalDate.of(2024, 1, 5)),10F);
+
+        List<AvailablePeriod> result = availablePeriodService.splitPeriods(timeSlot, Arrays.asList(availablePeriod));
+        assertEquals(0, result.size());
+    }
+
+    @Test
+    public void testSplitPeriodsWhenSplittingIntoTwo() {
+        TimeSlot timeSlot = new TimeSlot(LocalDate.of(2024, 1, 5), LocalDate.of(2024, 1, 8));
+        AvailablePeriod availablePeriod = new AvailablePeriod(1L, new TimeSlot(LocalDate.of(2024, 1, 1), LocalDate.of(2024, 1, 15)),10F);
+
+        List<AvailablePeriod> result = availablePeriodService.splitPeriods(timeSlot, Arrays.asList(availablePeriod));
+        assertEquals(2, result.size());
+
+        //assert that end split date is equal to reserved timeslot's start date
+        assertEquals(timeSlot.getStartDate(), result.get(0).getTimeSlot().getEndDate());
+        assertEquals(timeSlot.getEndDate(), result.get(1).getTimeSlot().getStartDate());
+    }
+
+    @Test
+    public void testSplitPeriodsWhenSplittingMultiplePeriods() {
+        TimeSlot timeSlot = new TimeSlot(LocalDate.of(2024, 1, 5), LocalDate.of(2024, 1, 10));
+        AvailablePeriod availablePeriod = new AvailablePeriod(1L, new TimeSlot(LocalDate.of(2024, 1, 1), LocalDate.of(2024, 1, 7)),10F);
+        AvailablePeriod availablePeriod2 = new AvailablePeriod(1L, new TimeSlot(LocalDate.of(2024, 1, 7), LocalDate.of(2024, 1, 15)),10F);
+
+        List<AvailablePeriod> result = availablePeriodService.splitPeriods(timeSlot, Arrays.asList(availablePeriod, availablePeriod2));
+        assertEquals(2, result.size());
+
+        //assert that end split date is equal to reserved timeslot's start date
+        assertEquals(timeSlot.getStartDate(), result.get(0).getTimeSlot().getEndDate());
+        assertEquals(timeSlot.getEndDate(), result.get(1).getTimeSlot().getStartDate());
+    }
+
+    @Test
+    public void testSplitPeriodsWhenSplittingIntoOneAfter() {
+        TimeSlot timeSlot = new TimeSlot(LocalDate.of(2024, 1, 1), LocalDate.of(2024, 1, 10));
+        AvailablePeriod availablePeriod = new AvailablePeriod(1L, new TimeSlot(LocalDate.of(2024, 1, 1), LocalDate.of(2024, 1, 15)),10F);
+
+        List<AvailablePeriod> result = availablePeriodService.splitPeriods(timeSlot, Arrays.asList(availablePeriod));
+        assertEquals(1, result.size());
+
+        //assert that end split date is equal to reserved timeslot's start date
+        assertEquals(timeSlot.getEndDate(), result.get(0).getTimeSlot().getStartDate());
+    }
+
+    @Test
+    public void testSplitPeriodsWhenSplittingIntoOneBefore() {
+        TimeSlot timeSlot = new TimeSlot(LocalDate.of(2024, 1, 10), LocalDate.of(2024, 1, 15));
+        AvailablePeriod availablePeriod = new AvailablePeriod(1L, new TimeSlot(LocalDate.of(2024, 1, 1), LocalDate.of(2024, 1, 15)),10F);
+
+        List<AvailablePeriod> result = availablePeriodService.splitPeriods(timeSlot, Arrays.asList(availablePeriod));
+        assertEquals(1, result.size());
+
+        //assert that end split date is equal to reserved timeslot's start date
+        assertEquals(timeSlot.getStartDate(), result.get(0).getTimeSlot().getEndDate());
     }
 }
