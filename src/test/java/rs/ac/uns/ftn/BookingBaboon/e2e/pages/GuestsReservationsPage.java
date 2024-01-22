@@ -13,7 +13,7 @@ import java.util.List;
 
 public class GuestsReservationsPage {
     private WebDriver driver;
-    private static String PAGE_URL="http://localhost:4200/5/reservations";
+    private static String PAGE_URL="http://localhost:4200/guest/5/reservations";
 
     @FindBy(css = ".app-title")
     WebElement heading;
@@ -37,15 +37,35 @@ public class GuestsReservationsPage {
         return isOpened;
     }
 
-    public void iterateThroughTable() {
+    public void ClickCancel(String id) {
         // Find the table using the provided locator
         WebElement table = reservationsTable;
-        // Find all rows within the table
-        List<WebElement> rows = table.findElements(By.tagName("tr"));
-        System.out.println("test!!!!!!!!!!");
-        // Iterate through each row and print the text
-        for (WebElement row : rows) {
-            System.out.println("Row: " + row.getText());
+        WebElement nextButton = driver.findElement(By.cssSelector("button[aria-label='Next page']"));
+        boolean found = false;
+        while (true) {
+            found = findReservationOnPage(table, id);
+            if (nextButton.isEnabled() && !found) {
+                nextButton.click();
+            } else break;
         }
+    }
+
+    private boolean findReservationOnPage(WebElement table, String id) {
+        List<WebElement> rows = table.findElements(By.tagName("tr"));
+        for (int i = 1; i < rows.size(); i++) {
+            WebElement row = rows.get(i);
+            String[] parts = row.getText().split("\n");
+            String rowId = parts[0];
+            System.out.println("id: " + parts[0]);
+
+            if (rowId.equals(id)) {
+                // Click the "Cancel" button in the matching row
+                WebElement cancelButton = row.findElement(By.id("cancel-reservation-button"));
+                cancelButton.click();
+                return true;
+            }
+
+        }
+        return false;
     }
 }

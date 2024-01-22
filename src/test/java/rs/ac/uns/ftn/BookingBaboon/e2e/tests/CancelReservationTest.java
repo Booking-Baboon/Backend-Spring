@@ -48,8 +48,7 @@ public class CancelReservationTest extends TestBase {
         homePageGuest.goToReservations();
         GuestsReservationsPage guestsReservationsPage = new GuestsReservationsPage(driver);
         Assert.assertTrue(guestsReservationsPage.isPageOpened());
-        guestsReservationsPage.iterateThroughTable();
-
+        guestsReservationsPage.ClickCancel("6");
     }
 
 /*    @Test
