@@ -28,6 +28,9 @@ public class LoginPage {
     @FindBy(css = "button[ng-reflect-router-link='/host/accommodations']")
     WebElement hostAccommodationsButton;
 
+    @FindBy(css = "button[ng-reflect-router-link='/guest,5,reservations']")
+    WebElement reservationsButton;
+
     public LoginPage(WebDriver driver){
         this.driver=driver;
         driver.get(PAGE_URL);
@@ -50,5 +53,15 @@ public class LoginPage {
         wait.until(ExpectedConditions.elementToBeClickable(logInButton)).click();
         new WebDriverWait(driver, Duration.ofSeconds(10))
          .until(ExpectedConditions.visibilityOf(hostAccommodationsButton));
+    }
+
+    public void logInGuest(String username, String password){
+        new WebDriverWait(driver, Duration.ofSeconds(10)).until(ExpectedConditions.visibilityOf(usernameInput)).sendKeys(username);
+        passwordInput.sendKeys(password);
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+
+        wait.until(ExpectedConditions.elementToBeClickable(logInButton)).click();
+        new WebDriverWait(driver, Duration.ofSeconds(10))
+                .until(ExpectedConditions.visibilityOf(reservationsButton));
     }
 }

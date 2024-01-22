@@ -73,6 +73,12 @@ public class HomePage {
     @FindBy(css = "button[ng-reflect-router-link='/host/accommodations']")
     WebElement hostAccommodationsButton;
 
+    @FindBy(css = "button[ng-reflect-router-link='/guest,5,reservations']")
+    WebElement reservationsButton;
+
+    @FindBy(css = "table tbody tr")
+    List<WebElement> reservationRows;
+
 
     public HomePage(WebDriver driver){
         this.driver=driver;
@@ -211,5 +217,17 @@ public class HomePage {
     public void goToHostAccommodations(){
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
         wait.until(ExpectedConditions.elementToBeClickable(hostAccommodationsButton)).click();
+    }
+
+    public void goToReservations() {
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+        wait.until(ExpectedConditions.elementToBeClickable(reservationsButton)).click();
+    }
+
+    public void iterateThroughTable() {
+
+        for (WebElement element : reservationRows) {
+            System.out.println("aaa" + element.getText());
+        }
     }
 }
