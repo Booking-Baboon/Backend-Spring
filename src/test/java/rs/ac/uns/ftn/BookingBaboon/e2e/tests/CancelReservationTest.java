@@ -66,7 +66,7 @@ public class CancelReservationTest extends TestBase {
     }
 
     @Test
-    public void CancelReservationWhenButtonIsDisabledTest() {
+    public void CancelReservationWhenButtonIsDisabledTest() { //Button is disabled when status is not approved or pending
         GuestsReservationsPage guestsReservationsPage = navigateToGuestReservations();
         Assert.assertTrue(guestsReservationsPage.checkIfReservationStatus(INVALID_RESERVATIONID, "Finished"));
 

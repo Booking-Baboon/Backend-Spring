@@ -63,7 +63,6 @@ public class GuestsReservationsPage {
             WebElement row = rows.get(i);
             String[] parts = row.getText().split("\n");
             String rowId = parts[0];
-            System.out.println("id: " + parts[0]);
 
             if (rowId.equals(id)) {
                 return row;
