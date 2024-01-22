@@ -17,8 +17,8 @@ import rs.ac.uns.ftn.BookingBaboon.domain.accommodation_handling.AvailablePeriod
 import rs.ac.uns.ftn.BookingBaboon.domain.shared.TimeSlot;
 import rs.ac.uns.ftn.BookingBaboon.repositories.accommodation_handling.IAvailablePeriodRepository;
 import rs.ac.uns.ftn.BookingBaboon.services.accommodation_handling.AvailablePeriodService;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.time.LocalDate;
@@ -158,5 +158,50 @@ public class AvailablePeriodServiceTest {
 
         //assert that end split date is equal to reserved timeslot's start date
         assertEquals(timeSlot.getStartDate(), result.get(0).getTimeSlot().getEndDate());
+    }
+
+    @Test
+    public void testGetOverlappingPeriods() {
+        TimeSlot timeSlot = new TimeSlot(LocalDate.of(2024, 1, 6), LocalDate.of(2024, 1, 10));
+        AvailablePeriod availablePeriod = new AvailablePeriod(1L, new TimeSlot(LocalDate.of(2024, 1, 1), LocalDate.of(2024, 1, 5)),10F);
+        AvailablePeriod availablePeriod2 = new AvailablePeriod(2L, new TimeSlot(LocalDate.of(2024, 1, 5), LocalDate.of(2024, 1, 15)),10F);
+        AvailablePeriod availablePeriod3 = new AvailablePeriod(3L, new TimeSlot(LocalDate.of(2024, 1, 10), LocalDate.of(2024, 1, 15)),10F);
+
+        List<AvailablePeriod> result = availablePeriodService.getOverlappingPeriods(timeSlot, Arrays.asList(availablePeriod, availablePeriod2, availablePeriod3));
+        assertEquals(1, result.size());
+
+        assertFalse(timeSlot.overlaps(availablePeriod.getTimeSlot()));
+        assertTrue(timeSlot.overlaps(availablePeriod2.getTimeSlot()));
+        assertFalse(timeSlot.overlaps(availablePeriod3.getTimeSlot()));
+    }
+
+    @Test
+    public void testGetOverlappingPeriodsWhenNotOverlapping() {
+        TimeSlot timeSlot = new TimeSlot(LocalDate.of(2024, 1, 6), LocalDate.of(2024, 1, 10));
+        AvailablePeriod availablePeriod = new AvailablePeriod(1L, new TimeSlot(LocalDate.of(2024, 1, 1), LocalDate.of(2024, 1, 5)),10F);
+        AvailablePeriod availablePeriod2 = new AvailablePeriod(2L, new TimeSlot(LocalDate.of(2024, 1, 20), LocalDate.of(2024, 1, 25)),10F);
+        AvailablePeriod availablePeriod3 = new AvailablePeriod(3L, new TimeSlot(LocalDate.of(2024, 1, 10), LocalDate.of(2024, 1, 15)),10F);
+
+        List<AvailablePeriod> result = availablePeriodService.getOverlappingPeriods(timeSlot, Arrays.asList(availablePeriod, availablePeriod2, availablePeriod3));
+        assertEquals(0, result.size());
+
+        assertFalse(timeSlot.overlaps(availablePeriod.getTimeSlot()));
+        assertFalse(timeSlot.overlaps(availablePeriod2.getTimeSlot()));
+        assertFalse(timeSlot.overlaps(availablePeriod3.getTimeSlot()));
+    }
+
+    @Test
+    public void testGetOverlappingPeriodsWhenMultipleOverlapping() {
+        TimeSlot timeSlot = new TimeSlot(LocalDate.of(2024, 1, 3), LocalDate.of(2024, 1, 13));
+        AvailablePeriod availablePeriod = new AvailablePeriod(1L, new TimeSlot(LocalDate.of(2024, 1, 1), LocalDate.of(2024, 1, 5)),10F);
+        AvailablePeriod availablePeriod2 = new AvailablePeriod(2L, new TimeSlot(LocalDate.of(2024, 1, 5), LocalDate.of(2024, 1, 10)),10F);
+        AvailablePeriod availablePeriod3 = new AvailablePeriod(3L, new TimeSlot(LocalDate.of(2024, 1, 10), LocalDate.of(2024, 1, 15)),10F);
+
+        List<AvailablePeriod> result = availablePeriodService.getOverlappingPeriods(timeSlot, Arrays.asList(availablePeriod, availablePeriod2, availablePeriod3));
+        assertEquals(3, result.size());
+
+        assertTrue(timeSlot.overlaps(availablePeriod.getTimeSlot()));
+        assertTrue(timeSlot.overlaps(availablePeriod2.getTimeSlot()));
+        assertTrue(timeSlot.overlaps(availablePeriod3.getTimeSlot()));
     }
 }
