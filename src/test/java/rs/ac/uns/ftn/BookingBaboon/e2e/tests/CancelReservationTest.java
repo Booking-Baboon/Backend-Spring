@@ -3,6 +3,7 @@ package rs.ac.uns.ftn.BookingBaboon.e2e.tests;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
+import org.openqa.selenium.WebElement;
 import org.springframework.test.context.ActiveProfiles;
 import org.testng.annotations.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -16,7 +17,9 @@ import java.io.InputStreamReader;
 import java.util.stream.Collectors;
 
 @SpringBootTest
+@Transactional
 public class CancelReservationTest extends TestBase {
+    String RESERVATIONID = "6";
     private final String guestUsername = "charlie.brown@example.com";
     private final String guestPassword = "charliespass";
 
@@ -48,7 +51,10 @@ public class CancelReservationTest extends TestBase {
         homePageGuest.goToReservations();
         GuestsReservationsPage guestsReservationsPage = new GuestsReservationsPage(driver);
         Assert.assertTrue(guestsReservationsPage.isPageOpened());
-        guestsReservationsPage.ClickCancel("6");
+        Assert.assertTrue(guestsReservationsPage.checkIfReservationStatus(RESERVATIONID, "Approved"));
+        guestsReservationsPage.ClickCancel(RESERVATIONID);
+        GuestsReservationsPage refreshedGuestReservationPage = new GuestsReservationsPage(driver);
+        Assert.assertTrue(refreshedGuestReservationPage.checkIfReservationStatus(RESERVATIONID, "Canceled"));
     }
 
 /*    @Test
